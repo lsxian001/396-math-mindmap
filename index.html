@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    max-width:1500px;
+    width:100%;
+    margin:0 auto;
+    background:#eef1f7;
+    font-family:"Microsoft YaHei","微软雅黑",sans-serif;
+    color:#1f2937;
+    padding:40px 46px 60px 46px;
+  }
+  /* 移动端适配：窄屏下缩小留白与字号，长图直接纵向滚动阅读 */
+  @media (max-width:768px) {
+    body { padding:20px 16px 40px 16px; }
+    .header h1 { font-size:28px; }
+    .header .sub { font-size:15px; }
+    .root { font-size:18px; padding:10px 24px; }
+    .legend { flex-wrap:wrap; gap:10px; font-size:14px; }
+    .chap-title { font-size:22px; }
+    .chap-badge { font-size:18px; padding:8px 18px; }
+    .card h3 { font-size:18px; }
+    .card { padding:14px 16px; }
+    .row .txt, ul.compact li { font-size:15px; line-height:1.7; }
+    table.cmp { font-size:13px; }
+    table.cmp th, table.cmp td { padding:5px 6px; }
+  }
+  .f { font-family:"Cambria Math","Georgia",serif; font-style:italic; font-size:1.02em; white-space:nowrap; }
+  .f sup, .f sub { font-size:0.72em; }
+
+  /* ===== 标题 ===== */
+  .header {
+    text-align:center; margin-bottom:10px;
+  }
+  .header h1 {
+    font-size:44px; letter-spacing:2px; color:#111827;
+  }
+  .header .sub {
+    margin-top:10px; font-size:20px; color:#6b7280;
+  }
+  .rootline {
+    display:flex; justify-content:center; margin:26px 0 8px 0;
+  }
+  .root {
+    background:linear-gradient(135deg,#1e3a8a,#3b82f6);
+    color:#fff; font-size:26px; font-weight:700;
+    padding:14px 44px; border-radius:999px;
+    box-shadow:0 6px 18px rgba(30,58,138,.35);
+  }
+  .legend {
+    display:flex; justify-content:center; gap:18px; margin:18px 0 6px 0; font-size:17px; color:#4b5563;
+  }
+  .pill { display:inline-block; padding:2px 12px; border-radius:999px; font-size:15px; font-weight:700; color:#fff; vertical-align:2px; margin-right:6px;}
+  .p-def { background:#0ea5e9; }   /* 定义 蓝 */
+  .p-for { background:#8b5cf6; }   /* 公式 紫 */
+  .p-cmp { background:#ef4444; }   /* 对照 红 */
+  .p-tip { background:#f59e0b; }   /* 易错 黄 */
+  .p-ext { background:#64748b; font-size:12px; padding:1px 8px; }   /* 补充 灰 */
+
+  /* ===== 章节 ===== */
+  .chapter { margin-top:38px; }
+  .chap-head {
+    display:flex; align-items:center; gap:16px; margin-bottom:18px;
+  }
+  .chap-badge {
+    color:#fff; font-size:24px; font-weight:800; padding:10px 26px; border-radius:14px;
+    box-shadow:0 4px 12px rgba(0,0,0,.18); white-space:nowrap;
+  }
+  .chap-title { font-size:30px; font-weight:800; }
+  .c13 .chap-badge { background:#2563eb; } .c13 .chap-title { color:#1d4ed8; }
+  .c14 .chap-badge { background:#059669; } .c14 .chap-title { color:#047857; }
+  .c15 .chap-badge { background:#ea580c; } .c15 .chap-title { color:#c2410c; }
+  .cx  .chap-badge { background:#dc2626; } .cx  .chap-title { color:#b91c1c; }
+
+  /* 分支树 */
+  .branch { display:flex; margin-bottom:16px; }
+  .spine {
+    flex:0 0 34px; position:relative;
+  }
+  .spine::before {
+    content:""; position:absolute; left:16px; top:0; bottom:-16px; width:3px; background:#c3cad9;
+  }
+  .branch:last-child .spine::before { bottom:50%; }
+  .spine::after {
+    content:""; position:absolute; left:16px; top:30px; width:18px; height:3px; background:#c3cad9;
+  }
+  .card {
+    flex:1; background:#fff; border-radius:14px; padding:16px 22px;
+    box-shadow:0 2px 10px rgba(15,23,42,.08);
+    border-left:8px solid #94a3b8;
+  }
+  .c13 .card { border-left-color:#3b82f6; }
+  .c14 .card { border-left-color:#10b981; }
+  .c15 .card { border-left-color:#f97316; }
+  .cx  .card { border-left-color:#ef4444; }
+  .card h3 { font-size:22px; margin-bottom:10px; color:#111827; }
+  .card h3 .no {
+    display:inline-block; color:#fff; font-size:16px; padding:2px 12px; border-radius:8px; margin-right:10px; vertical-align:3px;
+  }
+  .c13 .no { background:#3b82f6; } .c14 .no { background:#10b981; } .c15 .no { background:#f97316; } .cx .no { background:#ef4444; }
+
+  .row { display:flex; gap:10px; margin:8px 0; align-items:flex-start; }
+  .row .txt { flex:1; font-size:18px; line-height:1.75; }
+  ul.compact { margin:4px 0 4px 4px; list-style:none; }
+  ul.compact li { font-size:18px; line-height:1.9; padding-left:22px; position:relative; }
+  ul.compact li::before { content:"▸"; position:absolute; left:0; color:#9ca3af; }
+
+  .warn {
+    background:#fef3c7; border:1px dashed #f59e0b; border-radius:10px;
+    padding:8px 14px; margin-top:8px; font-size:17px; line-height:1.7; color:#92400e;
+  }
+  .key {
+    background:#eff6ff; border-left:4px solid #3b82f6; border-radius:8px;
+    padding:8px 14px; margin-top:8px; font-size:17px; line-height:1.7; color:#1e40af;
+  }
+
+  /* 对照表 */
+  table.cmp { width:100%; border-collapse:collapse; margin-top:8px; font-size:17px; }
+  table.cmp th, table.cmp td { border:1px solid #d1d5db; padding:7px 10px; text-align:center; line-height:1.6; }
+  table.cmp th { background:#f3f4f6; font-weight:700; color:#374151; font-size:17px; }
+  table.cmp td.hl { background:#fee2e2; color:#b91c1c; font-weight:700; }
+  table.cmp td.ok { background:#dcfce7; color:#15803d; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>396 经综数学 · 线性代数对照思维导图</h1>
+  <div class="sub">周洋鑫《考前 21 记》第 13 记 · 行列式 ｜ 第 14 记 · 矩阵运算 ｜ 第 15 记 · 初等变换与矩阵的秩</div>
+</div>
+<div class="rootline"><div class="root">行列式 → 矩阵运算 → 初等变换与秩：一条主线，三大对照</div></div>
+<div class="legend">
+  <span><span class="pill p-def">定义</span>概念与判定</span>
+  <span><span class="pill p-for">公式</span>必背结论</span>
+  <span><span class="pill p-cmp">对照</span>易混差异（重点）</span>
+  <span><span class="pill p-tip">易错</span>讲义【注】警示</span>
+  <span><span class="pill p-ext">补</span>讲义外补充结论（教材通用）</span>
+</div>
+
+<!-- ================= 第13记 ================= -->
+<div class="chapter c13">
+  <div class="chap-head"><div class="chap-badge">第 13 记</div><div class="chap-title">行列式</div></div>
+
+  <div class="branch"><div class="spine"></div><div class="card">
+    <h3><span class="no">必记1</span>行列式的性质（5 条）</h3>
+    <ul class="compact">
+      <li><span class="pill p-def">定义</span><b>转置</b>：<span class="f">|A<sup>T</sup>| = |A|</span>（行列互换，值不变）</li>
+      <li><span class="pill p-def">定义</span><b>互换</b>：换两行（列）变号 ⇒ 推论：两行（列）相同，行列式 = 0</li>
+      <li><span class="pill p-for">公式</span><b>倍乘</b>：某行（列）公因子 k 可提出（注意：只提<b>一行</b>！）</li>
+      <li><span class="pill p-def">定义</span><b>倍加</b>：某行（列）×k 加到另一行（列），行列式<b>不变</b>（化简主力）</li>
+      <li><span class="pill p-for">公式</span><b>加和（拆分）</b>：某行（列）是两数之和 ⇒ 拆成两个行列式之和</li>
+    </ul>
+  </div></div>
+
+  <div class="branch"><div class="spine"></div><div class="card">
+    <h3><span class="no">必记2</span>展开定理 ＋ 必记3 代数余子式线性和</h3>
+    <div class="row"><div class="txt"><span class="pill p-for">公式</span>按行展开：<span class="f">D<sub>n</sub> = a<sub>i1</sub>A<sub>i1</sub> + a<sub>i2</sub>A<sub>i2</sub> + … + a<sub>in</sub>A<sub>in</sub></span>；<b>异行相乘 = 0</b>：<span class="f">a<sub>i1</sub>A<sub>j1</sub> + … + a<sub>in</sub>A<sub>jn</sub> = 0（i≠j）</span></div></div>
+    <div class="row"><div class="txt"><span class="pill p-cmp">对照</span>线性和 <span class="f">k<sub>1</sub>A<sub>i1</sub> + k<sub>2</sub>A<sub>i2</sub> + … + k<sub>n</sub>A<sub>in</sub></span> ＝ 把原行列式<b>第 i 行换成 k₁…kₙ</b> 的新行列式（高频重点！）</div></div>
+  </div></div>
+
+  <div class="branch"><div class="spine"></div><div class="card">
+    <h3><span class="no">必记4</span>特殊行列式计算（4 类题型）</h3>
+    <div class="row"><div class="txt"><span class="pill p-def">定义</span>① 行（列）加和相等 ② 爪型行列式 ③ 点斜行列式（按点的位置展开）④ 范德蒙：<span class="f">D<sub>n</sub> = Π<sub>i&gt;j≥1</sub>(x<sub>i</sub> − x<sub>j</sub>)</span>（从 0 次方开始，理解算法不死背）</div></div>
+  </div></div>
+
+  <div class="branch"><div class="spine"></div><div class="card">
+    <h3><span class="no">必记5</span>抽象型行列式（必记！太重要）</h3>
+    <table class="cmp">
+      <tr><th>运算</th><th>结论</th><th>易混点</th></tr>
+      <tr><td><span class="f">|A<sup>T</sup>|</span></td><td class="ok"><span class="f">= |A|</span></td><td>转置不变</td></tr>
+      <tr><td><span class="f">|AB|</span></td><td class="ok"><span class="f">= |A||B|</span></td><td>乘法可拆</td></tr>
+      <tr><td><span class="f">|kA|</span></td><td class="hl"><span class="f">= k<sup>n</sup>|A|</span></td><td>n 阶方阵每行都提 k，共 n 个</td></tr>
+      <tr><td><span class="f">|A<sup>−1</sup>|</span></td><td class="ok"><span class="f">= 1/|A|</span></td><td>前提：A 可逆</td></tr>
+      <tr><td><span class="f">|A*|</span></td><td class="hl"><span class="f">= |A|<sup>n−1</sup>（n≥2）</span></td><td>指数是 n−1 不是 n</td></tr>
+      <tr><td>拉普拉斯（主对角分块）</td><td class="ok"><span class="f">|A O; O B| = |A C; O B| = |A O; C B| = |A||B|</span></td><td>主对角直接乘</td></tr>
+      <tr><td>拉普拉斯（副对角分块）</td><td class="hl"><span class="f">|O A; B O| = |C A; B O| = |O A; B C| = (−1)<sup>mn</sup>|A||B|</span></td><td>副对角带符号 (−1)<sup>mn</sup></td></tr>
+    </table>
+    <div class="warn">⚠ <span class="f">|A B; C D| ≠ |A||D| − |B||C|</span>（即使 A,B,C,D 同阶也不行）　⚠ <span class="f">|A + B| ≠ |A| + |B|</span>　⚠ 已知 <span class="f">A<sub>ij</sub> = ±a<sub>ij</sub></span> ⇒ <span class="f">A* = ±A<sup>T</sup></span></div>
+  </div></div>
+</div>
+
+<!-- ================= 第14记 ================= -->
+<div class="chapter c14">
+  <div class="chap-head"><div class="chap-badge">第 14 记</div><div class="chap-title">矩阵运算</div></div>
+
+  <div class="branch"><div class="spine"></div><div class="card">
+    <h3><span class="no">必记1</span>伴随矩阵 A*</h3>
+    <div class="row"><div class="txt"><span class="pill p-def">定义</span><span class="f">A* = (A<sub>ji</sub>)</span>：代数余子式<b>转置排列</b>（A<sub>ij</sub> 放在第 j 行 i 列）</div></div>
+    <div class="row"><div class="txt"><span class="pill p-for">公式</span>万能公式（见到伴随的第一定势）：<span class="f">AA* = A*A = |A|E</span></div></div>
+    <div class="row"><div class="txt"><span class="pill p-for">公式</span>秩公式：<span class="f">r(A*) = n（r(A)=n）；1（r(A)=n−1）；0（r(A)&lt;n−1）</span></div></div>
+    <div class="key">若 <span class="f">|A| = 0</span> 则 <span class="f">AA* = A*A = O</span> ⇒ ① <span class="f">r(A) + r(A*) ≤ n</span>；② A 的列向量都是 <span class="f">A*x = 0</span> 的解，A* 的列向量都是 <span class="f">Ax = 0</span> 的解</div>
+  </div></div>
+
+  <div class="branch"><div class="spine"></div><div class="card">
+    <h3><span class="no">必记2</span>逆矩阵</h3>
+    <div class="row"><div class="txt"><span class="pill p-def">定义</span><span class="f">AB = BA = E</span> ⇔ A 可逆，B = A⁻¹</div></div>
+    <div class="row"><div class="txt"><span class="pill p-cmp">对照</span><b>可逆充要链</b>（五等价，贯穿三记）：<span class="f">|A| ≠ 0</span> ⇔ <span class="f">r(A) = n</span> ⇔ 行（列）向量组线性无关 ⇔ <span class="f">Ax = 0</span> 仅有零解 ⇔ <span class="f">Ax = b</span> 有唯一解</div></div>
+    <ul class="compact">
+      <li><span class="pill p-for">公式</span><span class="f">(A<sup>−1</sup>)<sup>−1</sup> = A</span>；<span class="f">(kA)<sup>−1</sup> = (1/k)A<sup>−1</sup></span>；<span class="f">(AB)<sup>−1</sup> = B<sup>−1</sup>A<sup>−1</sup></span>；<span class="f">(A<sup>T</sup>)<sup>−1</sup> = (A<sup>−1</sup>)<sup>T</sup></span>；<span class="f">|A<sup>−1</sup>| = 1/|A|</span></li>
+    </ul>
+    <div class="row"><div class="txt"><span class="pill p-def">定义</span><b>四种求法</b>：① 定义法（凑 <span class="f">AB = E</span>，396 爱考二阶）② 公式法 <span class="f">A<sup>−1</sup> = A*/|A|</span>，二阶口诀「主对调、副变号、除以行列式」③ 初等行变换 <span class="f">(A⋮E) → (E⋮A<sup>−1</sup>)</span> ④ 分块：<span class="f">(B O; O C)<sup>−1</sup> = (B<sup>−1</sup> O; O C<sup>−1</sup>)</span>，副对角分块求逆要<b>换位置</b>：<span class="f">(O B; C O)<sup>−1</sup> = (O C<sup>−1</sup>; B<sup>−1</sup> O)</span></div></div>
+  </div></div>
+
+  <div class="branch"><div class="spine"></div><div class="card">
+    <h3><span class="no">必记3</span>三组对照记忆公式（本记核心，最易混！）</h3>
+    <table class="cmp">
+      <tr><th style="width:22%">对象</th><th>转置 T</th><th>伴随 *</th><th>逆 −1</th></tr>
+      <tr><td><b>乘积</b>（都倒序）</td><td class="ok"><span class="f">(AB)<sup>T</sup> = B<sup>T</sup>A<sup>T</sup></span></td><td class="ok"><span class="f">(AB)* = B*A*</span></td><td class="ok"><span class="f">(AB)<sup>−1</sup> = B<sup>−1</sup>A<sup>−1</sup></span></td></tr>
+      <tr><td><b>加法</b></td><td class="ok"><span class="f">(A+B)<sup>T</sup> = A<sup>T</sup>+B<sup>T</sup></span></td><td class="hl"><span class="f">(A+B)* ≠ A*+B*</span></td><td class="hl"><span class="f">(A+B)<sup>−1</sup> ≠ A<sup>−1</sup>+B<sup>−1</sup></span></td></tr>
+      <tr><td><b>三符号关系</b></td><td colspan="3" class="ok">*、T、−1 两两可交换顺序，如 <span class="f">(A*)<sup>−1</sup> = (A<sup>−1</sup>)* = A/|A|</span></td></tr>
+    </table>
+    <div class="warn">⚠ 口诀：「乘法都倒序，加法只有转置能拆，三符号随便换」</div>
+  </div></div>
+
+  <div class="branch"><div class="spine"></div><div class="card">
+    <h3><span class="no">必记4</span>秩为 1 的矩阵 ＋ 必记5 正交矩阵</h3>
+    <div class="row"><div class="txt"><span class="pill p-cmp">对照</span>易混符号（α、β 为非零列向量）：<span class="f">α<sup>T</sup>β = β<sup>T</sup>α = (α,β) = tr(αβ<sup>T</sup>)</span> 是<b>一个数</b>；<span class="f">αβ<sup>T</sup></span>、<span class="f">βα<sup>T</sup></span> 是<b>秩为 1 的矩阵</b></div></div>
+    <ul class="compact">
+      <li><span class="pill p-for">公式</span><span class="f">r(A) = 1</span> ⇔ ∃ 非零列向量 α、β 使 <span class="f">A = αβ<sup>T</sup></span>（对称阵则 <span class="f">A = αα<sup>T</sup></span>）</li>
+      <li><span class="pill p-for">公式</span>n 次幂：<span class="f">A<sup>n</sup> = [tr(A)]<sup>n−1</sup>·A</span>（十套卷重点）</li>
+      <li><span class="pill p-def">定义</span>正交矩阵：<span class="f">AA<sup>T</sup> = A<sup>T</sup>A = E</span> ⇒ <span class="f">A<sup>−1</sup> = A<sup>T</sup></span>；列向量均为单位向量且两两正交；<span class="f">|A| = ±1</span></li>
+    </ul>
+  </div></div>
+</div>
+
+<!-- ================= 第15记 ================= -->
+<div class="chapter c15">
+  <div class="chap-head"><div class="chap-badge">第 15 记</div><div class="chap-title">初等变换与矩阵的秩</div></div>
+
+  <div class="branch"><div class="spine"></div><div class="card">
+    <h3><span class="no">必记1</span>初等矩阵与初等变换（NB 表）</h3>
+    <div class="row"><div class="txt"><span class="pill p-def">定义</span>E 经<b>一次</b>初等变换 ⇒ 初等矩阵：<span class="f">E<sub>ij</sub></span>（换 i,j 行）、<span class="f">E<sub>i</sub>(k)</span>（第 i 行 ×k）、<span class="f">E<sub>ij</sub>(k)</span>（第 j 行 ×k 加到第 i 行）。<b>左乘 = 行变换，右乘 = 列变换</b></div></div>
+    <table class="cmp">
+      <tr><th style="width:26%">对照项</th><th><span class="f">E<sub>ij</sub></span></th><th><span class="f">E<sub>i</sub>(k)</span></th><th><span class="f">E<sub>ij</sub>(k)</span></th></tr>
+      <tr><td>左乘（行变换）</td><td>交换 i, j 行</td><td>第 i 行 ×k</td><td>第 j 行 ×k ＋ 第 i 行</td></tr>
+      <tr><td>右乘（列变换）</td><td>交换 i, j 列</td><td>第 i 列 ×k</td><td>第 i 列 ×k ＋ 第 j 列</td></tr>
+      <tr><td>行列式</td><td class="hl">−1</td><td class="hl">k</td><td class="ok">1</td></tr>
+      <tr><td>逆矩阵</td><td><span class="f">E<sub>ij</sub></span></td><td><span class="f">E<sub>i</sub>(1/k)</span></td><td><span class="f">E<sub>ij</sub>(−k)</span></td></tr>
+      <tr><td>转置</td><td><span class="f">E<sub>ij</sub></span></td><td><span class="f">E<sub>i</sub>(k)</span></td><td class="hl"><span class="f">E<sub>ji</sub>(k)</span>（下标对调！）</td></tr>
+    </table>
+  </div></div>
+
+  <div class="branch"><div class="spine"></div><div class="card">
+    <h3>初等变换的性质（串一串，全等价）</h3>
+    <div class="row"><div class="txt"><span class="pill p-cmp">对照</span><b>行变换</b> A→B（同型）⇔ 行向量组等价 ⇔ <span class="f">r(A) = r(B) = r(A;B)</span> ⇔ <span class="f">Ax = 0</span> 与 <span class="f">Bx = 0</span> 同解 ⇔ 列向量组有相同线性关系 ⇔ ∃ 可逆 P，<span class="f">PA = B</span></div></div>
+    <div class="row"><div class="txt"><span class="pill p-cmp">对照</span><b>列变换</b> A→B（同型）⇔ 列向量组等价 ⇔ <span class="f">r(A) = r(B) = r(A,B)</span> ⇔ <span class="f">A<sup>T</sup>x = 0</span> 与 <span class="f">B<sup>T</sup>x = 0</span> 同解 ⇔ 行向量组有相同线性关系 ⇔ ∃ 可逆 P，<span class="f">AP = B</span></div></div>
+  </div></div>
+
+  <div class="branch"><div class="spine"></div><div class="card">
+    <h3><span class="no">必记2</span>矩阵的秩：定义与求法</h3>
+    <div class="row"><div class="txt"><span class="pill p-def">定义</span>存在 r 阶子式 ≠ 0，且所有 r+1 阶子式全为 0 ⇒ <span class="f">r(A) = r</span></div></div>
+    <div class="row"><div class="txt"><span class="pill p-for">公式</span>定势：A ≠ O ⇒ <span class="f">r(A) ≥ 1</span>；两行不成比例 ⇒ <span class="f">r(A) ≥ 2</span>。求法：① 初等变换化为行阶梯，数非零行 ② 行列式：<span class="f">|A| ≠ 0 ⇔ r(A) = n</span>（满秩可逆）</div></div>
+  </div></div>
+
+  <div class="branch"><div class="spine"></div><div class="card">
+    <h3><span class="no">必记2</span>秩的 12 条重点公式（对照记）</h3>
+    <table class="cmp">
+      <tr><th style="width:8%">#</th><th>公式</th><th style="width:30%">记忆点</th></tr>
+      <tr><td>1</td><td><span class="f">r(A<sub>m×n</sub>) ≤ min(m, n)</span></td><td>不超行列数</td></tr>
+      <tr><td>2</td><td><span class="f">r(A) = r(A<sup>T</sup>) = r(kA)（k≠0）</span></td><td>转置、数乘不改变秩</td></tr>
+      <tr><td>3</td><td>P、Q 可逆 ⇒ <span class="f">r(PA) = r(AQ) = r(PAQ) = r(A)</span></td><td>乘可逆阵秩不变</td></tr>
+      <tr><td>4</td><td><span class="f">r(P<sub>m×n</sub>) = n ⇒ r(PA) = r(A)</span>；<span class="f">r(P<sub>m×n</sub>) = m ⇒ r(AP) = r(A)</span></td><td>列满秩左乘 / 行满秩右乘</td></tr>
+      <tr><td>5</td><td><span class="f">r(A + B) ≤ r(A) + r(B)</span></td><td class="hl">和 ≤ 秩和（与行列式 |A+B| 一起记）</td></tr>
+      <tr><td>6</td><td><span class="f">max{r(A),r(B)} ≤ r(A,B) ≤ r(A)+r(B)</span>（竖排同理）</span></td><td>拼接夹在中间</td></tr>
+      <tr><td>7</td><td><span class="f">r(AB) ≤ min{r(A), r(B)}</span></td><td class="hl">越乘越小（与 |AB|=|A||B| 区分）</td></tr>
+      <tr><td>8</td><td><span class="f">A<sub>m×n</sub>B<sub>n×s</sub> = O ⇒ r(A) + r(B) ≤ n</span></td><td>AB=O 想这条</td></tr>
+      <tr><td>9</td><td><span class="f">r(A) = r(A<sup>T</sup>) = r(AA<sup>T</sup>) = r(A<sup>T</sup>A)</span></td><td>四个相等</td></tr>
+      <tr><td>10</td><td><span class="f">r(A*) = n / 1 / 0</span>（对应 <span class="f">r(A) = n / n−1 / &lt;n−1</span>）</td><td class="hl">伴随秩三档（呼应第14记）</td></tr>
+      <tr><td>11</td><td><span class="f">r(A O; O B) = r(O A; B O) = r(A)+r(B)</span>；<span class="f">r(A O; C B) = r(A C; O B) ≥ r(A)+r(B)</span></td><td>分块对角可加，带 C 变 ≥</td></tr>
+      <tr><td>12</td><td><span class="f">r(A) = r(A; BA) = r(A, AB)</span></td><td>左/右添"自己的倍数"不变</td></tr>
+    </table>
+  </div></div>
+</div>
+
+<!-- ================= 跨记对照 ================= -->
+<div class="chapter cx">
+  <div class="chap-head"><div class="chap-badge">跨记对照</div><div class="chap-title">三记串起来的 8 条主线（无死角版）</div></div>
+
+  <div class="branch"><div class="spine"></div><div class="card">
+    <h3><span class="no">主线1</span>「|A|≠0」贯穿三记的等价大链条</h3>
+    <div class="key" style="font-size:19px; text-align:center;">
+      <span class="f">|A| ≠ 0</span>（13记）⇔ A 可逆、<span class="f">A<sup>−1</sup></span> 存在（14记）⇔ <span class="f">r(A) = n</span> 满秩（15记）⇔ 行/列向量组线性无关 ⇔ <span class="f">Ax = 0</span> 仅零解 ⇔ <span class="f">Ax = b</span> 唯一解
+    </div>
+    <div class="warn">反向同样成立：<span class="f">|A| = 0 ⇔ r(A) &lt; n ⇔</span> 不可逆 ⇔ 向量组相关 ⇔ <span class="f">Ax = 0</span> 有非零解</div>
+  </div></div>
+
+  <div class="branch"><div class="spine"></div><div class="card">
+    <h3><span class="no">主线2</span>同一个运算，行列式 / 逆 / 伴随 / 秩 结果大不同（总表）</h3>
+    <table class="cmp">
+      <tr><th style="width:13%">对 A 做运算</th><th>行列式（13记）</th><th>逆（14记）</th><th>伴随（14记）</th><th>秩（15记）</th></tr>
+      <tr><td><span class="f">kA</span></td><td class="hl"><span class="f">k<sup>n</sup>|A|</span></td><td><span class="f">(1/k)A<sup>−1</sup></span></td><td><span class="f">k<sup>n−1</sup>A*</span></td><td class="ok">不变（k≠0）</td></tr>
+      <tr><td><span class="f">A<sup>T</sup></span></td><td class="ok">不变</td><td><span class="f">(A<sup>−1</sup>)<sup>T</sup></span></td><td><span class="f">(A*)<sup>T</sup></span></td><td class="ok">不变</td></tr>
+      <tr><td><span class="f">AB</span></td><td class="ok"><span class="f">|A||B|</span>（可拆）</td><td class="hl"><span class="f">B<sup>−1</sup>A<sup>−1</sup></span>（倒序）</td><td class="hl"><span class="f">B*A*</span>（倒序）</td><td class="hl"><span class="f">≤ min{r(A),r(B)}</span>（变小）</td></tr>
+      <tr><td><span class="f">A + B</span></td><td class="hl">不能拆！</td><td class="hl">不能拆！</td><td class="hl">不能拆！</td><td><span class="f">r(A)+r(B)</span> 是上界</td></tr>
+      <tr><td><span class="f">A<sup>−1</sup></span></td><td><span class="f">1/|A|</span></td><td class="ok"><span class="f">(A<sup>−1</sup>)<sup>−1</sup> = A</span>（还原）</td><td><span class="f">(A<sup>−1</sup>)* = A/|A|</span></td><td class="ok">= n（满秩不变）</td></tr>
+      <tr><td><span class="f">A*</span></td><td class="hl"><span class="f">|A|<sup>n−1</sup></span></td><td><span class="f">(A*)<sup>−1</sup> = A/|A|</span></td><td class="hl"><span class="f">(A*)* = |A|<sup>n−2</sup>A</span> <span class="pill p-ext">补</span></td><td class="hl">三档 n / 1 / 0</td></tr>
+      <tr><td><span class="f">A<sup>m</sup>（幂）</span></td><td><span class="f">|A|<sup>m</sup></span></td><td><span class="f">(A<sup>m</sup>)<sup>−1</sup> = (A<sup>−1</sup>)<sup>m</sup></span></td><td>—</td><td class="hl"><span class="f">r(A<sup>m</sup>) ≤ r(A)</span> <span class="pill p-ext">补</span></td></tr>
+      <tr><td>乘可逆阵 <span class="f">PAQ</span></td><td><span class="f">|P||A||Q|</span>（数值变）</td><td><span class="f">(PAQ)<sup>−1</sup> = Q<sup>−1</sup>A<sup>−1</sup>P<sup>−1</sup></span></td><td>—</td><td class="ok">不变</td></tr>
+    </table>
+    <div class="warn">⚠ 记忆钩子：<b>秩最佛系</b>（转置、数乘、乘可逆阵都不动它）；<b>行列式最敏感</b>（数乘变 kⁿ、初等变换变号/倍乘）；<b>乘法都倒序，加法都不能拆</b>。</div>
+  </div></div>
+
+  <div class="branch"><div class="spine"></div><div class="card">
+    <h3><span class="no">主线3</span>T / * / −1 三大运算「再来一次 &amp; 互相组合」对照</h3>
+    <table class="cmp">
+      <tr><th style="width:22%">维度</th><th>转置 T</th><th>伴随 *</th><th>逆 −1</th></tr>
+      <tr><td><b>做两次</b></td><td class="ok"><span class="f">(A<sup>T</sup>)<sup>T</sup> = A</span>（还原）</td><td class="hl"><span class="f">(A*)* = |A|<sup>n−2</sup>A</span>（不还原！）<span class="pill p-ext">补</span></td><td class="ok"><span class="f">(A<sup>−1</sup>)<sup>−1</sup> = A</span>（还原）</td></tr>
+      <tr><td><b>与幂组合</b></td><td><span class="f">(A<sup>m</sup>)<sup>T</sup> = (A<sup>T</sup>)<sup>m</sup></span></td><td>—</td><td><span class="f">(A<sup>m</sup>)<sup>−1</sup> = (A<sup>−1</sup>)<sup>m</sup></span></td></tr>
+      <tr><td><b>互相交换</b></td><td colspan="3" class="ok">三符号两两可换序：<span class="f">(A<sup>T</sup>)<sup>−1</sup> = (A<sup>−1</sup>)<sup>T</sup></span>，<span class="f">(A*)<sup>T</sup> = (A<sup>T</sup>)*</span>，<span class="f">(A*)<sup>−1</sup> = (A<sup>−1</sup>)* = A/|A|</span></td></tr>
+      <tr><td><b>作用在 E 上</b></td><td><span class="f">E<sup>T</sup> = E</span></td><td><span class="f">E* = E</span></td><td><span class="f">E<sup>−1</sup> = E</span></td></tr>
+    </table>
+    <div class="warn">⚠ 唯一的"异类"是 <span class="f">(A*)*</span>：T 和 −1 做两次都回到 A，只有伴随做两次冒出因子 <span class="f">|A|<sup>n−2</sup></span>。</div>
+  </div></div>
+
+  <div class="branch"><div class="spine"></div><div class="card">
+    <h3><span class="no">主线4</span>四类特殊矩阵一张表（可逆 / 正交 / 秩1 / 初等）</h3>
+    <table class="cmp">
+      <tr><th style="width:16%">矩阵类型</th><th>定义</th><th>逆</th><th>行列式</th><th>秩</th></tr>
+      <tr><td><b>可逆矩阵</b></td><td><span class="f">AB = BA = E</span></td><td><span class="f">A<sup>−1</sup> = A*/|A|</span></td><td class="ok"><span class="f">≠ 0</span></td><td class="ok"><span class="f">n</span></td></tr>
+      <tr><td><b>正交矩阵</b></td><td><span class="f">AA<sup>T</sup> = A<sup>T</sup>A = E</span></td><td class="ok"><span class="f">A<sup>−1</sup> = A<sup>T</sup></span>（白送）</td><td><span class="f">±1</span></td><td class="ok"><span class="f">n</span></td></tr>
+      <tr><td><b>秩1矩阵</b></td><td><span class="f">A = αβ<sup>T</sup></span></td><td class="hl">n≥2 时必不可逆</td><td class="hl"><span class="f">0</span>（n≥2）</td><td class="hl"><span class="f">1</span></td></tr>
+      <tr><td><b>初等矩阵</b></td><td>E 经一次初等变换</td><td><span class="f">E<sub>ij</sub> / E<sub>i</sub>(1/k) / E<sub>ij</sub>(−k)</span></td><td class="hl"><span class="f">−1 / k / 1</span></td><td class="ok"><span class="f">n</span>（必可逆）</td></tr>
+    </table>
+    <div class="key">秩1矩阵是"极端退化"：行列式 = 0、秩 = 1；正交矩阵是"极端优秀"：逆 = 转置、行列式 = ±1、列向量单位正交。</div>
+  </div></div>
+
+  <div class="branch"><div class="spine"></div><div class="card">
+    <h3><span class="no">主线5</span>三种初等行变换：对行列式、秩、向量组影响不同！</h3>
+    <table class="cmp">
+      <tr><th style="width:22%">行变换操作</th><th>行列式怎么变</th><th>秩怎么变</th><th>向量组 / 方程组</th></tr>
+      <tr><td>交换两行</td><td class="hl">变号（×(−1)）</td><td class="ok">不变</td><td rowspan="3" style="vertical-align:middle;">行向量组等价；列向量组<b>线性关系不变</b>；<span class="f">Ax = 0</span> 同解</td></tr>
+      <tr><td>某行 ×k（k≠0）</td><td class="hl">×k</td><td class="ok">不变</td></tr>
+      <tr><td>倍加（j 行 ×k 加到 i 行）</td><td class="ok">不变</td><td class="ok">不变</td></tr>
+    </table>
+    <div class="warn">⚠ 这就是「化行阶梯」两用的代价：<b>求秩</b>随便变（秩不变）；<b>算行列式</b>要记账——每换一次行补一个负号，每提一次 k 补一个 k。列变换同理（对偶）。</div>
+  </div></div>
+
+  <div class="branch"><div class="spine"></div><div class="card">
+    <h3><span class="no">主线6</span>矩阵乘法「三大禁忌」：数的直觉在这里全失效</h3>
+    <table class="cmp">
+      <tr><th style="width:26%">数的直觉（✗）</th><th>矩阵的真相（✓）</th><th>补救 / 替代工具</th></tr>
+      <tr><td>交换律 <span class="f">ab = ba</span></td><td class="hl"><span class="f">AB ≠ BA</span>（一般）</td><td>但 <span class="f">|AB| = |BA|</span>、<span class="f">tr(AB) = tr(BA)</span> <span class="pill p-ext">补</span></td></tr>
+      <tr><td>消去律 <span class="f">ab = ac ⇒ b = c</span></td><td class="hl"><span class="f">AB = AC ⇏ B = C</span></td><td>A <b>可逆</b>时可消去（左乘 <span class="f">A<sup>−1</sup></span>）</td></tr>
+      <tr><td><span class="f">ab = 0 ⇒ a = 0</span> 或 <span class="f">b = 0</span></td><td class="hl"><span class="f">AB = O ⇏ A = O</span> 或 <span class="f">B = O</span></td><td>改用秩：<span class="f">r(A) + r(B) ≤ n</span>（15记公式8）</td></tr>
+    </table>
+    <div class="key">所以第 15 记的秩公式不是孤立的——它们是矩阵乘法"失去三大定律"之后的替代语言。</div>
+  </div></div>
+
+  <div class="branch"><div class="spine"></div><div class="card">
+    <h3><span class="no">主线7</span>行变换 ↔ 列变换：结论全部"对偶" ＋ 数与矩阵之辨</h3>
+    <div class="row"><div class="txt"><span class="pill p-cmp">对照</span>左乘初等阵 = 行变换；右乘 = 列变换。行变换保<b>列</b>向量的线性关系、方程组 <span class="f">Ax=0</span> 同解；列变换保<b>行</b>向量的线性关系、<span class="f">A<sup>T</sup>x=0</span> 同解。记一半推另一半即可。</div></div>
+    <div class="row"><div class="txt"><span class="pill p-cmp">对照</span>符号之辨：<span class="f">α<sup>T</sup>β = (α,β) = tr(αβ<sup>T</sup>)</span> 是<b>数</b>（可互换顺序）；<span class="f">αβ<sup>T</sup></span> 是<b>矩阵</b>（秩1，n 次幂用迹）。<span class="f">|A|</span>、<span class="f">tr(A)</span> 是数，可自由乘进乘出；A、A*、A⁻¹ 是矩阵，乘法受主线6禁忌约束。</div></div>
+  </div></div>
+
+  <div class="branch"><div class="spine"></div><div class="card">
+    <h3><span class="no">主线8</span>做题触发词（定势思维索引）</h3>
+    <ul class="compact">
+      <li>见 <b>A*</b> → 先写 <span class="f">AA* = A*A = |A|E</span>，再想 <span class="f">|A*| = |A|<sup>n−1</sup></span>、r(A*) 三档</li>
+      <li>见 <b>AB = O</b> → <span class="f">r(A) + r(B) ≤ n</span>，且 B 的列都是 <span class="f">Ax = 0</span> 的解</li>
+      <li>见 <b>r(A) = 1</b> → 拆 <span class="f">A = αβ<sup>T</sup></span>，n 次幂用 <span class="f">A<sup>n</sup> = [tr(A)]<sup>n−1</sup>A</span></li>
+      <li>见 <b>二阶数值逆矩阵</b> → 「主对调、副变号、除以行列式」直接秒</li>
+      <li>见 <b>初等变换描述</b> → 翻译成左/右乘初等矩阵，套 NB 表</li>
+      <li>见 <b>可逆判定</b> → 五等价链任选一个最好算的（通常算 |A|）</li>
+      <li>见 <b>抽象行列式 |A+B|</b> → 不能拆！改写乘积 <span class="f">A + B = A(E + A<sup>−1</sup>B)</span> 再取行列式 <span class="pill p-ext">补</span></li>
+      <li>见 <b>化阶梯算行列式</b> → 换行记负号、提 k 记倍数（主线5）</li>
+    </ul>
+  </div></div>
+</div>
+
+<div style="text-align:center; margin-top:36px; font-size:15px; color:#9ca3af;">
+  依据：周洋鑫《2026 396 经综数学考前 21 记（最终版）》第 13–15 记整理 ｜ 定义 / 公式 / 对照 三分支 ｜ 红底 = 易混重点
+</div>
+
+</body>
+</html>
